@@ -1,31 +1,55 @@
-let video;
+var video;
 
-function preload(){
-  // put preload code here
-}
+var vScale = 16;
+var slider;
+
+var cols = 70;
+var rows = 52;
+
+var boxes = [];
 
 function setup() {
-  createCanvas(320, 240);
-  // background(51);
-  video = createCapture(VIDEO);
-  video.size(320, 240);
-  video.hide();
+  noCanvas();
   pixelDensity(1);
+  video = createCapture(VIDEO);
+  video.size(cols, rows);
+  video.hide();
+  slider = createSlider(0, 255, 127);
+
+  for (var y = 0; y < rows; y++) {
+    for (var x = 0; x < cols; x++) {
+      var box = createCheckbox();
+      box.style('display', 'inline');
+      box.parent('mirror');
+      boxes.push(box);
+    }
+    var linebreak = createSpan('<br/>');
+    linebreak.parent('mirror');
+  }
+
 }
 
 function draw() {
-  background(51);
+  video.loadPixels();
+  for (var y = 0; y < video.height; y++) {
+    for (var x = 0; x < video.width; x++) {
+      var index = (video.width - x + 1 + (y * video.width))*4;
+      var r = video.pixels[index+0];
+      var g = video.pixels[index+1];
+      var b = video.pixels[index+2];
 
-  loadPixels();
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      let index = (x + y * width)*4;
-      pixels[index+0] = x;
-      pixels[index+1] = random(255);
-      pixels[index+2] = y;
-      pixels[index+3] = 255;
+      var bright = (r+g+b)/3;
 
+      var threshold = slider.value();
+
+      var checkIndex = x + y * cols;
+
+      if (bright > threshold) {
+        boxes[checkIndex].checked(false);
+      } else {
+        boxes[checkIndex].checked(true);
+      }
+    }
   }
-}
-updatePixels();
+
 }
